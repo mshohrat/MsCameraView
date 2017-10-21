@@ -13,7 +13,7 @@ Basic useful feature list:
 add below line into your build.gradle file.
 ```java
     dependencies {
-        compile adding library
+        compile 'com.github.mshohrat:MsCameraView:1.0.1'
     }
 ```
 
@@ -68,7 +68,7 @@ also for more information you can see demo app.
 Text about versioning
 
 ## Authors
-* Meysam Ghorbani
+* Meysam Shohrat
 
 ## License
 This project is licensed under the GNU General Public License - see the LICENSE.md file for details
