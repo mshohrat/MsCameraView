@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.1"
-
+    enforceUniquePackageName = false
     defaultConfig {
         applicationId "com.mscameraview.demo"
         minSdkVersion 14
@@ -27,5 +27,5 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     testCompile 'junit:junit:4.12'
-    compile project(path: ':camera')
+    compile 'com.github.mshohrat:MsCameraView:1.0.0'
 }
