@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="height_edt_large">50dp</dimen>
+    <dimen name="width_edt_large">250dp</dimen>
+    <dimen name="textsize_medium">14dp</dimen>
+    <dimen name="padding_large">20dp</dimen>
+    <dimen name="padding_small">5dp</dimen>
+    <dimen name="margin_medium">15dp</dimen>
+    <dimen name="textsize_large">18dp</dimen>
+    <dimen name="margin_small">5dp</dimen>
+    <dimen name="padding_medium">15dp</dimen>
+    <dimen name="height_search_row">50dp</dimen>
+    <dimen name="height_button_medium">50dp</dimen>
+    <dimen name="margin_large">20dp</dimen>
+    <dimen name="height_splash_logo">200dp</dimen>
+    <dimen name="textsize_view_medium">14dp</dimen>
+    <dimen name="margin_view">15dp</dimen>
+    <dimen name="textsize_view_large">16dp</dimen>
+    <dimen name="radius_button_corner">5dp</dimen>
+    <dimen name="padding_view">5dp</dimen>
+    <dimen name="height_row_list_header">40dp</dimen>
+    <dimen name="margin_view_small">5dp</dimen>
+    <dimen name="textsize_view_small">12dp</dimen>
+</resources>
