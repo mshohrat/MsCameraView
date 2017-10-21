@@ -27,6 +27,7 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:26.+'
-    compile project(path: ':camera')
+    compile 'com.android.support:appcompat-v7:25.3.0'
+//    compile project(path: ':camera')
+    compile 'com.github.mshohrat:MsCameraView:1.1.0'
 }
