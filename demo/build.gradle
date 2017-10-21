@@ -28,5 +28,5 @@ dependencies {
     })
     testCompile 'junit:junit:4.12'
 //    compile project(path: ':camera')
-    compile 'com.github.mshohrat:MsCameraView:1.1.0'
+    compile 'com.github.mshohrat:MsCameraView:1.1.4'
 }
