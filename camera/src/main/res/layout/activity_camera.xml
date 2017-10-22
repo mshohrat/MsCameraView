@@ -19,6 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/colorBlack"
+        android:orientation="vertical"
         android:visibility="gone">
 
         <LinearLayout
@@ -47,17 +48,20 @@
                 android:background="@drawable/rectangle_gray_selector"
                 android:text="@string/verify"/>
 
+
+
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/photo_taken_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside"
+            android:visibility="gone"/>
 
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/photo_taken_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:adjustViewBounds="true"
-        android:scaleType="centerInside"
-        android:visibility="gone"/>
 
     <ImageView
         android:id="@+id/take_photo"

@@ -309,8 +309,6 @@ public class CameraActivity extends AppCompatActivity {
             mCameraView = new CameraView(this, mCamera);//create a SurfaceView to show camera data
             FrameLayout camera_view = (FrameLayout)findViewById(R.id.camera_view);
             camera_view.addView(mCameraView);//add the SurfaceView to the layout
-            mCameraView.setScaleX(1);
-            mCameraView.setScaleY(1);
         }
 
         if(jpegCallback==null){
@@ -410,6 +408,20 @@ public class CameraActivity extends AppCompatActivity {
             mCamera.setDisplayOrientation(90);
             Camera.Parameters parameters = mCamera.getParameters();
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+            Camera.Size mSize = null;
+            List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
+            if(sizes!=null && !sizes.isEmpty()){
+                int maxWidth = 0;
+                for (Camera.Size size : sizes){
+                    if(size.width>maxWidth){
+                        maxWidth = size.width;
+                        mSize = size;
+                    }
+                }
+            }
+            if(mSize!=null){
+                parameters.setPictureSize(mSize.width,mSize.height);
+            }
             mCamera.setParameters(parameters);
             //get the holder and set this class as the callback, so we can get camera data here
             mHolder = getHolder();
@@ -468,7 +480,7 @@ public class CameraActivity extends AppCompatActivity {
                 //take the picture
                 mCamera.autoFocus(new Camera.AutoFocusCallback() {
                     @Override
-                    public void onAutoFocus(boolean success, Camera camera) {
+                    public void onAutoFocus(boolean success, final Camera camera) {
                         if(success){
                             camera.takePicture(new Camera.ShutterCallback() {
                                 @Override
@@ -476,16 +488,6 @@ public class CameraActivity extends AppCompatActivity {
                                     if(mediaPlayer!=null){
                                         mediaPlayer.start();
                                     }
-                                    Camera.Parameters parameters = mCamera.getParameters();
-                                    Camera.Size mSize = null;
-                                    List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
-                                    if(sizes!=null && sizes.isEmpty()){
-                                        mSize = sizes.get(0);
-                                    }
-                                    if(mSize!=null){
-                                        parameters.setPictureSize(mSize.width,mSize.height);
-                                    }
-                                    mCamera.setParameters(parameters);
                                 }
                             },null, jpegCallback);
                         }else {
