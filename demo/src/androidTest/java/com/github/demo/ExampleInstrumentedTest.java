@@ -1,4 +1,4 @@
-package cab.snapp.demo;
+package com.github.demo;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

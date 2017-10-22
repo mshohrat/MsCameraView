@@ -5,7 +5,7 @@ android {
     buildToolsVersion "26.0.1"
     enforceUniquePackageName = false
     defaultConfig {
-        applicationId "com.mscameraview.demo"
+        applicationId "com.github.mscameraview.demo"
         minSdkVersion 14
         targetSdkVersion 26
         versionCode 1

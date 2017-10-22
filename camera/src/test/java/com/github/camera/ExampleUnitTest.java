@@ -1,4 +1,4 @@
-package cab.snapp.demo;
+package com.github.camera;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package cab.snapp.camera;
+package com.github.camera;
 
 import android.content.Context;
 import android.content.Intent;
@@ -27,7 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
-import cab.snapp.camera.util.PermissionHelper;
+import com.github.camera.util.PermissionHelper;
 
 public class CameraActivity extends AppCompatActivity {
 

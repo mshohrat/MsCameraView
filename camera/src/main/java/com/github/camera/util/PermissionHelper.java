@@ -1,4 +1,4 @@
-package cab.snapp.camera.util;
+package com.github.camera.util;
 
 import android.Manifest;
 import android.app.Activity;

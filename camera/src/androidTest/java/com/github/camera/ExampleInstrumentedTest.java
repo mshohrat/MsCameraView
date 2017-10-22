@@ -1,4 +1,4 @@
-package cab.snapp.camera;
+package com.github.camera;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

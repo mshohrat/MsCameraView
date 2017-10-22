@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 
-    package="cab.snapp.camera">
+    package="com.github.camera">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -14,14 +14,12 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".CameraActivity"
+            android:name="com.github.camera.CameraActivity"
             android:screenOrientation="portrait"
             android:launchMode="singleTop">
             <intent-filter>
