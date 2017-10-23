@@ -407,7 +407,7 @@ public class CameraActivity extends AppCompatActivity {
             mCamera = camera;
             mCamera.setDisplayOrientation(90);
             Camera.Parameters parameters = mCamera.getParameters();
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+            //parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
             Camera.Size mSize = null;
             List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
             if(sizes!=null && !sizes.isEmpty()){
