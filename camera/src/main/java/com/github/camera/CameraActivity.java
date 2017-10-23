@@ -530,6 +530,22 @@ public class CameraActivity extends AppCompatActivity {
                         mCamera.release();
                         try{
                             mCamera= Camera.open(cameraId);
+                            Camera.Parameters parameters = mCamera.getParameters();
+                            Camera.Size mSize = null;
+                            List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
+                            if(sizes!=null && !sizes.isEmpty()){
+                                int maxWidth = 0;
+                                for (Camera.Size size : sizes){
+                                    if(size.width>maxWidth){
+                                        maxWidth = size.width;
+                                        mSize = size;
+                                    }
+                                }
+                            }
+                            if(mSize!=null){
+                                parameters.setPictureSize(mSize.width,mSize.height);
+                            }
+                            mCamera.setParameters(parameters);
                             mCamera.setPreviewDisplay(getHolder());
                             mCamera.setDisplayOrientation(90);
                             mCamera.startPreview();
@@ -552,24 +568,6 @@ public class CameraActivity extends AppCompatActivity {
             Camera.Parameters parameters = mCamera.getParameters();
             parameters.setFlashMode(flashStatus);
             mCamera.setParameters(parameters);
-
-                /*if (mCamera != null) {
-                    mCamera.stopPreview();
-                    mCamera.release();
-                    try{
-                        mCamera=Camera.open(mCurrentCameraId);
-                        Camera.Parameters parameters = mCamera.getParameters();
-                        parameters.setFlashMode(flashStatus);
-                        mCamera.setParameters(parameters);
-                        mCamera.setPreviewDisplay(getHolder());
-                        mCamera.setDisplayOrientation(90);
-                        mCamera.startPreview();
-
-                    } catch (Exception e){
-                        Log.d("ERROR", "Failed to get camera: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                }*/
             }
         }
 
