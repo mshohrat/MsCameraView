@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 import com.github.camera.CameraActivity;
+import com.github.camera.NewCameraActivity;
+import com.google.android.cameraview.CameraView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     ImageView photoView;
     int REQUEST_CODE = 1001;
     private static final String TEMP_IMAGE_NAME = "tempImage";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +42,8 @@ public class MainActivity extends AppCompatActivity {
                 File storageDir = Environment.getExternalStoragePublicDirectory(
                         Environment.DIRECTORY_PICTURES);
                 File file = new File(storageDir,TEMP_IMAGE_NAME);
-                Intent intent = new Intent(CameraActivity.DEFAULT_ACTION);
-                intent.putExtra(CameraActivity.EXTRA_OUTPUT, Uri.fromFile(file).toString());
+                Intent intent = new Intent(NewCameraActivity.DEFAULT_ACTION);
+                intent.putExtra(NewCameraActivity.EXTRA_OUTPUT, Uri.fromFile(file).toString());
                 startActivityForResult(intent, REQUEST_CODE);
 
             }
@@ -74,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
                     Bitmap actuallyUsableBitmap = BitmapFactory.decodeFileDescriptor(
                             fileDescriptor.getFileDescriptor(), null, options);
                     if(rotation!=0) {
-                        actuallyUsableBitmap = CameraActivity.rotateBitmap(actuallyUsableBitmap, rotation);
+                        actuallyUsableBitmap = NewCameraActivity.rotateBitmap(actuallyUsableBitmap, rotation);
                         if (actuallyUsableBitmap != null) {
                             photoView.setImageBitmap(actuallyUsableBitmap);
                         }
