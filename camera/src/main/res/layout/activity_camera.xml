@@ -6,13 +6,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".CameraActivity">
 
-    <FrameLayout
+    <com.google.android.cameraview.CameraView
         android:id="@+id/camera_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorBlack">
-
-    </FrameLayout>
+        android:keepScreenOn="true"
+        android:adjustViewBounds="true"
+        app:autoFocus="true"
+        app:facing="back"
+        app:flash="auto"/>
 
     <LinearLayout
         android:id="@+id/submit_layer"
@@ -117,3 +119,4 @@
         android:visibility="gone"/>
 
 </FrameLayout>
+
