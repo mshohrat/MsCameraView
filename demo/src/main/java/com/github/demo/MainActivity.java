@@ -76,9 +76,10 @@ public class MainActivity extends AppCompatActivity {
                             fileDescriptor.getFileDescriptor(), null, options);
                     if(rotation!=0) {
                         actuallyUsableBitmap = CameraActivity.rotateBitmap(actuallyUsableBitmap, rotation);
-                        if (actuallyUsableBitmap != null) {
-                            photoView.setImageBitmap(actuallyUsableBitmap);
-                        }
+
+                    }
+                    if (actuallyUsableBitmap != null) {
+                        photoView.setImageBitmap(actuallyUsableBitmap);
                     }
                 }
 

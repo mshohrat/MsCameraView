@@ -89,19 +89,19 @@ public class CameraActivity extends AppCompatActivity {
                     photoTakenByteData = data;
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inMutable = true;
+                    if(photoTakenBitmap!=null && !photoTakenBitmap.isRecycled()){
+                        photoTakenBitmap.recycle();
+                    }
                     photoTakenBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
                     if(photoTakenBitmap!=null) {
-                        photoTakenBitmap = cameraView.getFacing()==CameraView.FACING_BACK ?
-                                rotate(photoTakenBitmap, 90):
-                                rotate(photoTakenBitmap, 270);
                         takenPhotoView.setImageBitmap(photoTakenBitmap);
                         takenPhotoView.setVisibility(View.VISIBLE);
                         submitLayer.setVisibility(View.VISIBLE);
                         changeFlashStatusBt.setVisibility(View.GONE);
                         switchCameraFaceBt.setVisibility(View.GONE);
                         takePhotoBt.setVisibility(View.GONE);
+                        }
                     }
-                }
             });
         }
 
@@ -211,7 +211,7 @@ public class CameraActivity extends AppCompatActivity {
                 outputStream.flush();
                 outputStream.close();
                 Intent output = new Intent();
-                output.putExtra(RETURNED_IMAGE_ROTATION,cameraView.getFacing()==CameraView.FACING_BACK ? 90 : 270);
+                output.putExtra(RETURNED_IMAGE_ROTATION,0/*cameraView.getFacing()==CameraView.FACING_BACK ? 90 : 270*/);
                 output.setData(Uri.fromFile(file));
                 setResult(RESULT_OK,output);
                 if(photoTakenBitmap!=null && !photoTakenBitmap.isRecycled()){
@@ -336,7 +336,8 @@ public class CameraActivity extends AppCompatActivity {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
         String path = MediaStore.Images.Media.insertImage(context.getContentResolver(), inImage, "Document", null);
-        //if(!inImage.isRecycled())inImage.recycle();
+        if(!inImage.isRecycled())
+            inImage.recycle();
         return Uri.parse(path);
     }
 
@@ -345,7 +346,8 @@ public class CameraActivity extends AppCompatActivity {
             Matrix matrix = new Matrix();
             matrix.postRotate(rotation);
             Bitmap bmOut = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
-            //if(!bm.isRecycled())bm.recycle();
+            if(!bm.isRecycled())
+                bm.recycle();
             return bmOut;
         }
         return bm;
@@ -356,7 +358,8 @@ public class CameraActivity extends AppCompatActivity {
             Matrix matrix = new Matrix();
             matrix.postRotate(rotation);
             Bitmap bmOut = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
-            //if(!bm.isRecycled())bm.recycle();
+            if(!bm.isRecycled())
+                bm.recycle();
             return bmOut;
         }
         return bm;

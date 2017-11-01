@@ -13,7 +13,7 @@ Basic useful feature list:
 add below line into your build.gradle file.
 ```java
     dependencies {
-        compile 'com.github.mshohrat:MsCameraView:1.2.7'
+        compile 'com.github.mshohrat:MsCameraView:1.2.8'
     }
 ```
 
@@ -53,9 +53,9 @@ For using library the only thing that you should do is creating an intent with s
                             fileDescriptor.getFileDescriptor(), null, options);
                     if(rotation!=0) {
                         actuallyUsableBitmap = CameraActivity.rotateBitmap(actuallyUsableBitmap, rotation);
-                        if (actuallyUsableBitmap != null) {
-                            //TODO do something with bitmap 
-                        }
+                    }
+                    if (actuallyUsableBitmap != null) {
+                        //TODO do something with bitmap 
                     }
                 }
     
