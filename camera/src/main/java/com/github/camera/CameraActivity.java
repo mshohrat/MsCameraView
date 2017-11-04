@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
+import android.media.ExifInterface;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
@@ -12,12 +14,21 @@ import android.os.HandlerThread;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.Request;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.SizeReadyCallback;
+import com.bumptech.glide.request.target.Target;
 import com.github.camera.util.PermissionHelper;
 import com.google.android.cameraview.CameraView;
 
@@ -31,6 +42,8 @@ public class CameraActivity extends AppCompatActivity {
     public static final String RETURNED_IMAGE_ROTATION = "returned image rotation";
     public static final String DEFAULT_ACTION = "ms.camera.ACTION_IMAGE_CAPTURE";
     public static final String EXTRA_OUTPUT = "extra output";
+    public final int finalWidth = 760;
+    public final int finalHeight = 1280;
 
     private int[] flashStatusIcons = {
             R.drawable.ic_flash_auto,
@@ -87,21 +100,32 @@ public class CameraActivity extends AppCompatActivity {
                 public void run() {
 
                     photoTakenByteData = data;
-                    BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inMutable = true;
-                    if(photoTakenBitmap!=null && !photoTakenBitmap.isRecycled()){
-                        photoTakenBitmap.recycle();
+                    if(isPictureOutOfDisplayBounds(data)){
+                        Glide.with(CameraActivity.this).load(data).override(getDisplayWidth(),getDisplayHeight()).dontAnimate().into(new SimpleTarget<GlideDrawable>() {
+                            @Override
+                            public void onResourceReady(GlideDrawable glideDrawable, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                                takenPhotoView.setImageDrawable(glideDrawable);
+                                takenPhotoView.setVisibility(View.VISIBLE);
+                                submitLayer.setVisibility(View.VISIBLE);
+                                changeFlashStatusBt.setVisibility(View.GONE);
+                                switchCameraFaceBt.setVisibility(View.GONE);
+                                takePhotoBt.setVisibility(View.GONE);
+                            }
+                        });
+                    }else {
+                        Glide.with(CameraActivity.this).load(data).dontAnimate().into(new SimpleTarget<GlideDrawable>() {
+                            @Override
+                            public void onResourceReady(GlideDrawable glideDrawable, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                                takenPhotoView.setImageDrawable(glideDrawable);
+                                takenPhotoView.setVisibility(View.VISIBLE);
+                                submitLayer.setVisibility(View.VISIBLE);
+                                changeFlashStatusBt.setVisibility(View.GONE);
+                                switchCameraFaceBt.setVisibility(View.GONE);
+                                takePhotoBt.setVisibility(View.GONE);
+                            }
+                        });
                     }
-                    photoTakenBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-                    if(photoTakenBitmap!=null) {
-                        takenPhotoView.setImageBitmap(photoTakenBitmap);
-                        takenPhotoView.setVisibility(View.VISIBLE);
-                        submitLayer.setVisibility(View.VISIBLE);
-                        changeFlashStatusBt.setVisibility(View.GONE);
-                        switchCameraFaceBt.setVisibility(View.GONE);
-                        takePhotoBt.setVisibility(View.GONE);
-                        }
-                    }
+                }
             });
         }
 
@@ -111,6 +135,7 @@ public class CameraActivity extends AppCompatActivity {
         if(cameraView==null)
             return;
         cameraView.setFacing(cameraView.getFacing()==CameraView.FACING_BACK ? CameraView.FACING_FRONT : CameraView.FACING_BACK);
+        cameraView.setAutoFocus(true);
         toggleFlashButtonEnable(cameraView.getFacing()==CameraView.FACING_BACK);
     }
 
@@ -211,7 +236,8 @@ public class CameraActivity extends AppCompatActivity {
                 outputStream.flush();
                 outputStream.close();
                 Intent output = new Intent();
-                output.putExtra(RETURNED_IMAGE_ROTATION,0/*cameraView.getFacing()==CameraView.FACING_BACK ? 90 : 270*/);
+                int rotation = calculateBitmapRotation(photoTakenByteData);
+                output.putExtra(RETURNED_IMAGE_ROTATION,rotation/*cameraView.getFacing()==CameraView.FACING_BACK ? 90 : 270*/);
                 output.setData(Uri.fromFile(file));
                 setResult(RESULT_OK,output);
                 if(photoTakenBitmap!=null && !photoTakenBitmap.isRecycled()){
@@ -225,6 +251,55 @@ public class CameraActivity extends AppCompatActivity {
 
         }
     }
+
+    private int calculateBitmapRotation(byte[] photoTakenByteData) {
+        if(cameraView==null || photoTakenByteData==null)
+            return 0;
+        int rotation = 0;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inMutable = true;
+        // First decode with inJustDecodeBounds=true to check dimensions
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(photoTakenByteData, 0, photoTakenByteData.length, options);
+        if(cameraView.getFacing()==CameraView.FACING_BACK){
+            if(options.outWidth>options.outHeight){
+                rotation = 90;
+            }
+        }else{
+            if(options.outWidth>options.outHeight){
+                rotation = 270;
+            }
+        }
+        return rotation;
+    }
+
+    private int getDisplayHeight(){
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        return displayMetrics.heightPixels;
+    }
+
+    private int getDisplayWidth(){
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        return displayMetrics.widthPixels;
+    }
+
+    private boolean isPictureOutOfDisplayBounds(byte[] data){
+        if(cameraView==null || data==null)
+            return false;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inMutable = true;
+        // First decode with inJustDecodeBounds=true to check dimensions
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(data, 0, data.length, options);
+        if(options.outWidth>getDisplayWidth() || options.outHeight>getDisplayHeight()){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
     public void cancelPhotoClicked(){
         submitLayer.setVisibility(View.GONE);
         takenPhotoView.setImageBitmap(null);
