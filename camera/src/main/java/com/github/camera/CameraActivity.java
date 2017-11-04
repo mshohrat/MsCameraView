@@ -184,8 +184,8 @@ public class CameraActivity extends AppCompatActivity {
         cameraView = (CameraView)findViewById(R.id.camera_view);
         progressBar = (ProgressBar)findViewById(R.id.progress);
         submitLayer = (LinearLayout)findViewById(R.id.submit_layer);
-        submitPhotoBt = (Button) submitLayer.findViewById(R.id.submit_photo_btn);
-        cancelPhotoBt = (Button) submitLayer.findViewById(R.id.cancel_photo_btn);
+        submitPhotoBt = (Button) findViewById(R.id.submit_photo_btn);
+        cancelPhotoBt = (Button) findViewById(R.id.cancel_photo_btn);
         takenPhotoView = (ImageView)findViewById(R.id.photo_taken_view);
         takePhotoBt = (ImageView)findViewById(R.id.take_photo);
         changeFlashStatusBt = (ImageView)findViewById(R.id.flash_status);
