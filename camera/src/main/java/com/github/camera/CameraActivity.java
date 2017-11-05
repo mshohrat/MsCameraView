@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -229,7 +230,7 @@ public class CameraActivity extends AppCompatActivity {
 
     public void submitPhotoClicked(){
         if(photoTakenByteData!=null && photoTakenUri!=null && photoTakenUri.getPath()!=null){
-            File file = new File(photoTakenUri.getPath());
+            File file = new File(photoTakenUri.getPath()+String.valueOf(System.currentTimeMillis())+".jpg");
             try{
                 FileOutputStream outputStream = new FileOutputStream(file);
                 outputStream.write(photoTakenByteData);
