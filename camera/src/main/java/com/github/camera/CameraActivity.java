@@ -427,7 +427,13 @@ public class CameraActivity extends AppCompatActivity {
                 if(hasPermissions()){
                     if(!isCreated){
                         if (cameraView != null) {
-                            cameraView.start();
+                            try {
+                                cameraView.start();
+                            }catch (Exception e){
+                                e.printStackTrace();
+                                Toast.makeText(CameraActivity.this,getResources().getString(R.string.your_device_camera_has_not_minimum_features),Toast.LENGTH_LONG).show();
+                                finish();
+                            }
                         }
                     }else{
                         initCamera();
@@ -453,7 +459,13 @@ public class CameraActivity extends AppCompatActivity {
             requestPermissions(false);
         }else {
             if (cameraView != null) {
-                cameraView.start();
+                try {
+                    cameraView.start();
+                }catch (Exception e){
+                    e.printStackTrace();
+                    Toast.makeText(this,getResources().getString(R.string.your_device_camera_has_not_minimum_features),Toast.LENGTH_LONG).show();
+                    finish();
+                }
             }
         }
     }
@@ -461,7 +473,13 @@ public class CameraActivity extends AppCompatActivity {
     private void initCamera() {
         if(cameraView==null)
             return;
-        cameraView.start();
+        try {
+            cameraView.start();
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(this,getResources().getString(R.string.your_device_camera_has_not_minimum_features),Toast.LENGTH_LONG).show();
+            finish();
+        }
         if(!hasFlash){
             toggleFlashButtonEnable(false);
         }else {
