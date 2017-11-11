@@ -2,6 +2,7 @@ package com.github.camera;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -22,6 +23,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
@@ -43,7 +45,7 @@ public class CameraActivity extends AppCompatActivity {
     public static final String RETURNED_IMAGE_ROTATION = "returned image rotation";
     public static final String DEFAULT_ACTION = "ms.camera.ACTION_IMAGE_CAPTURE";
     public static final String EXTRA_OUTPUT = "extra output";
-    public final int finalWidth = 760;
+    public final int finalWidth = 768;
     public final int finalHeight = 1280;
 
     private int[] flashStatusIcons = {
@@ -81,6 +83,16 @@ public class CameraActivity extends AppCompatActivity {
     ImageView switchCameraFaceBt;
 
     CameraView cameraView;
+
+    boolean hasCamera;
+
+    boolean hasAutoFocus;
+
+    boolean hasFlash;
+
+    boolean hasFrontCamera;
+
+
 
     private CameraView.Callback mCallback
             = new CameraView.Callback() {
@@ -133,10 +145,12 @@ public class CameraActivity extends AppCompatActivity {
     };
 
     public void switchCameraFaceClicked(){
-        if(cameraView==null)
+        if(cameraView==null || !hasFrontCamera)
             return;
         cameraView.setFacing(cameraView.getFacing()==CameraView.FACING_BACK ? CameraView.FACING_FRONT : CameraView.FACING_BACK);
-        cameraView.setAutoFocus(true);
+        if(hasAutoFocus) {
+            cameraView.setAutoFocus(true);
+        }
         toggleFlashButtonEnable(cameraView.getFacing()==CameraView.FACING_BACK);
     }
 
@@ -144,7 +158,29 @@ public class CameraActivity extends AppCompatActivity {
         changeFlashStatusBt.setEnabled(enable);
         changeFlashStatusBt.setClickable(enable);
 
-        if(cameraView!=null){
+        int resId=0;
+        if(enable){
+            if(mCurrentFlashStatusIcon==R.drawable.ic_auto_flash_disabled){
+                resId = R.drawable.ic_flash_auto;
+            }else if(mCurrentFlashStatusIcon==R.drawable.ic_flash_off_disabled){
+                resId = R.drawable.ic_flash_off;
+            }else if(mCurrentFlashStatusIcon==R.drawable.ic_flash_on_disabled){
+                resId = R.drawable.ic_flash_on;
+            }
+        }else {
+            if(mCurrentFlashStatusIcon==R.drawable.ic_flash_auto){
+                resId = R.drawable.ic_auto_flash_disabled;
+            }else if(mCurrentFlashStatusIcon==R.drawable.ic_flash_off){
+                resId = R.drawable.ic_flash_off_disabled;
+            }else if(mCurrentFlashStatusIcon==R.drawable.ic_flash_on){
+                resId = R.drawable.ic_flash_on_disabled;
+            }
+        }
+        if(resId!=0){
+            changeFlashStatusBt.setImageResource(resId);
+            mCurrentFlashStatusIcon = resId;
+        }
+        /*if(cameraView!=null){
             int resId;
             switch (cameraView.getFlash()){
                 case CameraView.FLASH_ON:
@@ -161,7 +197,7 @@ public class CameraActivity extends AppCompatActivity {
                     break;
             }
             changeFlashStatusBt.setImageResource(resId);
-        }
+        }*/
 
 
 
@@ -170,7 +206,9 @@ public class CameraActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        checkCameraFeature();
         setContentView(R.layout.activity_camera);
+        initFeatures();
         initViews();
         mediaPlayer = MediaPlayer.create(this,R.raw.camera_shutter_sound);
         if(!hasPermissions()) {
@@ -179,6 +217,22 @@ public class CameraActivity extends AppCompatActivity {
             initCamera();
             getIntentDate(getIntent());
         }
+    }
+
+    private void checkCameraFeature(){
+        hasCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+        if(!hasCamera){
+            Toast.makeText(this,getResources().getString(R.string.your_device_has_not_camera_feature),Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+
+    private void initFeatures(){
+        hasAutoFocus = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS);
+
+        hasFlash = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
+
+        hasFrontCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT);
     }
 
     private void initViews() {
@@ -226,6 +280,8 @@ public class CameraActivity extends AppCompatActivity {
                 switchCameraFaceClicked();
             }
         });
+
+
     }
 
     public void submitPhotoClicked(){
@@ -328,7 +384,7 @@ public class CameraActivity extends AppCompatActivity {
 
     public void changeFlashStatusClicked(){
 
-        if(cameraView==null)
+        if(cameraView==null || !hasFlash)
             return;
         if(mCurrentFlashStatusIcon==R.drawable.ic_flash_auto){
             mCurrentFlashStatusIcon = R.drawable.ic_flash_on;
@@ -344,6 +400,7 @@ public class CameraActivity extends AppCompatActivity {
             cameraView.setFlash(CameraView.FLASH_AUTO);
         }
         changeFlashStatusBt.setImageResource(mCurrentFlashStatusIcon);
+        changeFlashStatusBt.setTag(mCurrentFlashStatusIcon);
 
     }
 
@@ -405,6 +462,14 @@ public class CameraActivity extends AppCompatActivity {
         if(cameraView==null)
             return;
         cameraView.start();
+        if(!hasFlash){
+            toggleFlashButtonEnable(false);
+        }else {
+            cameraView.setFlash(CameraView.FLASH_AUTO);
+        }
+        if(hasAutoFocus) {
+            cameraView.setAutoFocus(true);
+        }
         cameraView.addCallback(mCallback);
     }
 

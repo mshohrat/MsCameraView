@@ -2,4 +2,5 @@
     <string name="app_name">Camera</string>
     <string name="cancel">لغو</string>
     <string name="verify">تایید</string>
+    <string name="your_device_has_not_camera_feature">دستگاه شما فاقد دوربین است</string>
 </resources>

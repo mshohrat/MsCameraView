@@ -12,10 +12,7 @@
         android:layout_height="match_parent"
         android:keepScreenOn="true"
         android:adjustViewBounds="true"
-        app:aspectRatio="4:3"
-        app:autoFocus="true"
-        app:facing="back"
-        app:flash="auto"/>
+        app:facing="back"/>
 
     <LinearLayout
         android:id="@+id/submit_layer"
