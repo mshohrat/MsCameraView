@@ -13,7 +13,7 @@ Basic useful feature list:
 add below line into your build.gradle file.
 ```java
     dependencies {
-        compile 'com.github.mshohrat:MsCameraView:1.2.8'
+        compile 'com.github.mshohrat:MsCameraView:1.3.5'
     }
 ```
 
