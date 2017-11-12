@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".CameraActivity">
 
-    <com.google.android.cameraview.CameraView
+    <com.github.camera.msCameraView.CameraView
         android:id="@+id/camera_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

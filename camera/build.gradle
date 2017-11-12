@@ -27,6 +27,6 @@ dependencies {
     compile "com.android.support:appcompat-v7:$supportLibraryVersion"
     testCompile 'junit:junit:4.12'
     //compile "com.github.google:cameraview:-SNAPSHOT"
-    compile project(':cameraView')
+    //compile project(':cameraView')
     compile 'com.github.bumptech.glide:glide:3.7.0'
 }

@@ -32,8 +32,8 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.bumptech.glide.request.target.Target;
+import com.github.camera.msCameraView.CameraView;
 import com.github.camera.util.PermissionHelper;
-import com.google.android.cameraview.CameraView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -236,7 +236,7 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        cameraView = (CameraView)findViewById(R.id.camera_view);
+        cameraView = (CameraView) findViewById(R.id.camera_view);
         progressBar = (ProgressBar)findViewById(R.id.progress);
         submitLayer = (LinearLayout)findViewById(R.id.submit_layer);
         submitPhotoBt = (Button) findViewById(R.id.submit_photo_btn);
