@@ -281,7 +281,13 @@ public class CameraActivity extends AppCompatActivity {
             }
         });
 
+        toggleCameraSwitchButtonEnabled(hasFrontCamera);
+    }
 
+    private void toggleCameraSwitchButtonEnabled(boolean hasFrontCamera) {
+        switchCameraFaceBt.setClickable(hasFrontCamera);
+        switchCameraFaceBt.setEnabled(hasFrontCamera);
+        switchCameraFaceBt.setImageResource(hasFrontCamera? R.drawable.camera_switch : R.drawable.camera_switch_disabled);
     }
 
     public void submitPhotoClicked(){
