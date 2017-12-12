@@ -305,6 +305,11 @@ public class CameraActivity extends AppCompatActivity {
                 setResult(RESULT_OK,output);
                 if(photoTakenBitmap!=null && !photoTakenBitmap.isRecycled()){
                     photoTakenBitmap.recycle();
+                    photoTakenBitmap = null;
+                    System.gc();
+                }
+                if(photoTakenByteData!=null){
+                    photoTakenByteData = null;
                 }
                 finish();
             }catch (IOException e){
@@ -369,6 +374,11 @@ public class CameraActivity extends AppCompatActivity {
         takenPhotoView.setVisibility(View.GONE);
         if(photoTakenBitmap!=null && !photoTakenBitmap.isRecycled()){
             photoTakenBitmap.recycle();
+            photoTakenBitmap = null;
+            System.gc();
+        }
+        if(photoTakenByteData!=null){
+            photoTakenByteData = null;
         }
         changeFlashStatusBt.setVisibility(View.VISIBLE);
         switchCameraFaceBt.setVisibility(View.VISIBLE);
@@ -544,6 +554,8 @@ public class CameraActivity extends AppCompatActivity {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+        cameraView.releaseResources();
+        cameraView = null;
     }
 
     @Override
