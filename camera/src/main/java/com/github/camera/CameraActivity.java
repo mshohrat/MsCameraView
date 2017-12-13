@@ -10,6 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
@@ -35,6 +36,7 @@ import com.bumptech.glide.request.target.Target;
 import com.github.camera.msCameraView.CameraView;
 import com.github.camera.util.PermissionHelper;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -92,6 +94,10 @@ public class CameraActivity extends AppCompatActivity {
 
     boolean hasFrontCamera;
 
+    private Handler mHandler;
+
+    private final int DEFAULT_MIN_WIDTH_QUALITY = 768;        // min pixels
+    private final int DEFAULT_MIN_HEIGHT_QUALITY = 1024;        // min pixels
 
 
     private CameraView.Callback mCallback
@@ -108,41 +114,125 @@ public class CameraActivity extends AppCompatActivity {
         @Override
         public void onPictureTaken(final CameraView cameraView, final byte[] data) {
 
-            new Handler(getMainLooper()).post(new Runnable() {
+            mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-
-                    photoTakenByteData = data;
-                    if(isPictureOutOfDisplayBounds(data)){
-                        Glide.with(CameraActivity.this).load(data).override(getDisplayWidth(),getDisplayHeight()).dontAnimate().into(new SimpleTarget<GlideDrawable>() {
-                            @Override
-                            public void onResourceReady(GlideDrawable glideDrawable, GlideAnimation<? super GlideDrawable> glideAnimation) {
-                                takenPhotoView.setImageDrawable(glideDrawable);
-                                takenPhotoView.setVisibility(View.VISIBLE);
-                                submitLayer.setVisibility(View.VISIBLE);
-                                changeFlashStatusBt.setVisibility(View.GONE);
-                                switchCameraFaceBt.setVisibility(View.GONE);
-                                takePhotoBt.setVisibility(View.GONE);
-                            }
-                        });
-                    }else {
-                        Glide.with(CameraActivity.this).load(data).dontAnimate().into(new SimpleTarget<GlideDrawable>() {
-                            @Override
-                            public void onResourceReady(GlideDrawable glideDrawable, GlideAnimation<? super GlideDrawable> glideAnimation) {
-                                takenPhotoView.setImageDrawable(glideDrawable);
-                                takenPhotoView.setVisibility(View.VISIBLE);
-                                submitLayer.setVisibility(View.VISIBLE);
-                                changeFlashStatusBt.setVisibility(View.GONE);
-                                switchCameraFaceBt.setVisibility(View.GONE);
-                                takePhotoBt.setVisibility(View.GONE);
-                            }
-                        });
-                    }
+                if(cameraView!=null){
+                    cameraView.stop();
+                }
+                compressSaveAndShowPicture(data);
                 }
             });
         }
 
     };
+
+    private void compressSaveAndShowPicture(byte[] data){
+        if(data==null || photoTakenUri==null){
+            return;
+        }
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(data,0,data.length,options);
+        int maxHeight = DEFAULT_MIN_HEIGHT_QUALITY;
+        int maxWidth = DEFAULT_MIN_WIDTH_QUALITY;
+        options.inSampleSize = calculateInSampleSize(options,maxWidth,maxHeight);
+        options.inJustDecodeBounds = false;
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP){
+            options.inPurgeable = true;
+        }
+        options.inMutable = true;
+        options.inPreferredConfig = Bitmap.Config.RGB_565;
+        System.gc();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(data,0,data.length,options);
+        File file = new File(photoTakenUri.getPath()+String.valueOf(System.currentTimeMillis())+".jpg");
+        FileOutputStream outputStream;
+        try {
+            outputStream = new FileOutputStream(file);
+            if(bitmap!=null){
+                bitmap.compress(Bitmap.CompressFormat.JPEG,80,outputStream);
+            }
+            outputStream.flush();
+            outputStream.close();
+            outputStream = null;
+        }catch (IOException e){
+            e.printStackTrace();
+            outputStream = null;
+        }
+
+        ExifInterface exif;
+        try {
+            exif = new ExifInterface(file.getAbsolutePath());
+            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
+            if(orientation!=0){
+                Matrix matrix = new Matrix();
+                if (orientation == 6) {
+                    matrix.postRotate(90);
+                } else if (orientation == 3) {
+                    matrix.postRotate(180);
+                } else if (orientation == 8) {
+                    matrix.postRotate(270);
+                }
+                if(bitmap!=null) {
+                    bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix,true);
+                    FileOutputStream mOutputStream;
+                    try {
+                        mOutputStream = new FileOutputStream(file);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG,75,mOutputStream);
+                        bitmap.recycle();
+                        mOutputStream.flush();
+                        mOutputStream.close();
+                        mOutputStream = null;
+                        System.gc();
+                    }catch (IOException e){
+                        e.printStackTrace();
+                        bitmap.recycle();
+                        mOutputStream = null;
+                        System.gc();
+                    }
+                }
+                exif = null;
+            }else {
+                if(bitmap!=null){
+                    bitmap.recycle();
+                    System.gc();
+                }
+            }
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        photoTakenUri = Uri.fromFile(file);
+        takenPhotoView.setImageURI(null);
+        takenPhotoView.setImageURI(photoTakenUri);
+        takenPhotoView.setVisibility(View.VISIBLE);
+        submitLayer.setVisibility(View.VISIBLE);
+        changeFlashStatusBt.setVisibility(View.GONE);
+        switchCameraFaceBt.setVisibility(View.GONE);
+        takePhotoBt.setVisibility(View.GONE);
+    }
+
+    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+            // Calculate ratios of height and width to requested height and width
+            final int heightRatio = Math.round((float) height / (float) reqHeight);
+            final int widthRatio = Math.round((float) width / (float) reqWidth);
+
+            // Choose the smallest ratio as inSampleSize value, this will guarantee
+            // a final image with both dimensions larger than or equal to the
+            // requested height and width.
+            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+        }
+        return inSampleSize;
+    }
+
 
     public void switchCameraFaceClicked(){
         if(cameraView==null || !hasFrontCamera)
@@ -180,32 +270,12 @@ public class CameraActivity extends AppCompatActivity {
             changeFlashStatusBt.setImageResource(resId);
             mCurrentFlashStatusIcon = resId;
         }
-        /*if(cameraView!=null){
-            int resId;
-            switch (cameraView.getFlash()){
-                case CameraView.FLASH_ON:
-                    resId = enable ? R.drawable.ic_flash_on : R.drawable.ic_flash_on_disabled;
-                    break;
-                case CameraView.FLASH_OFF:
-                    resId = enable ? R.drawable.ic_flash_off : R.drawable.ic_flash_off_disabled;
-                    break;
-                case CameraView.FLASH_AUTO:
-                    resId = enable ? R.drawable.ic_flash_auto : R.drawable.ic_auto_flash_disabled;
-                    break;
-                default:
-                    resId = enable ? R.drawable.ic_flash_auto : R.drawable.ic_auto_flash_disabled;
-                    break;
-            }
-            changeFlashStatusBt.setImageResource(resId);
-        }*/
-
-
-
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mHandler = new Handler(getMainLooper());
         checkCameraFeature();
         setContentView(R.layout.activity_camera);
         initFeatures();
@@ -291,33 +361,13 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     public void submitPhotoClicked(){
-        if(photoTakenByteData!=null && photoTakenUri!=null && photoTakenUri.getPath()!=null){
-            File file = new File(photoTakenUri.getPath()+String.valueOf(System.currentTimeMillis())+".jpg");
-            try{
-                FileOutputStream outputStream = new FileOutputStream(file);
-                outputStream.write(photoTakenByteData);
-                outputStream.flush();
-                outputStream.close();
-                Intent output = new Intent();
-                int rotation = calculateBitmapRotation(photoTakenByteData);
-                output.putExtra(RETURNED_IMAGE_ROTATION,rotation/*cameraView.getFacing()==CameraView.FACING_BACK ? 90 : 270*/);
-                output.setData(Uri.fromFile(file));
-                setResult(RESULT_OK,output);
-                if(photoTakenBitmap!=null && !photoTakenBitmap.isRecycled()){
-                    photoTakenBitmap.recycle();
-                    photoTakenBitmap = null;
-                    System.gc();
-                }
-                if(photoTakenByteData!=null){
-                    photoTakenByteData = null;
-                }
-                finish();
-            }catch (IOException e){
-                e.printStackTrace();
-            }
-
-
+        if(photoTakenUri==null){
+            return;
         }
+        Intent output = new Intent();
+        output.setData(photoTakenUri);
+        setResult(RESULT_OK,output);
+        finish();
     }
 
     private int calculateBitmapRotation(byte[] photoTakenByteData) {
@@ -372,17 +422,29 @@ public class CameraActivity extends AppCompatActivity {
         submitLayer.setVisibility(View.GONE);
         takenPhotoView.setImageBitmap(null);
         takenPhotoView.setVisibility(View.GONE);
-        if(photoTakenBitmap!=null && !photoTakenBitmap.isRecycled()){
-            photoTakenBitmap.recycle();
-            photoTakenBitmap = null;
-            System.gc();
-        }
         if(photoTakenByteData!=null){
             photoTakenByteData = null;
+        }
+        if(photoTakenBitmap!=null){
+            photoTakenBitmap.recycle();
+            System.gc();
         }
         changeFlashStatusBt.setVisibility(View.VISIBLE);
         switchCameraFaceBt.setVisibility(View.VISIBLE);
         takePhotoBt.setVisibility(View.VISIBLE);
+        if(!hasPermissions()) {
+            requestPermissions(false);
+        }else {
+            if (cameraView != null) {
+                try {
+                    cameraView.start();
+                }catch (Exception e){
+                    e.printStackTrace();
+                    Toast.makeText(this,getResources().getString(R.string.your_device_camera_has_not_minimum_features),Toast.LENGTH_LONG).show();
+                    finish();
+                }
+            }
+        }
     }
 
     synchronized public void takePhotoClicked(){
@@ -556,13 +618,15 @@ public class CameraActivity extends AppCompatActivity {
         }
         cameraView.releaseResources();
         cameraView = null;
+        mCallback = null;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(cameraView!=null)
+        if(cameraView!=null) {
             cameraView.stop();
+        }
     }
 
     private Handler getBackgroundHandler() {

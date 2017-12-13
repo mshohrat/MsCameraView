@@ -174,16 +174,20 @@ class Camera1 extends CameraViewImpl {
 
     @Override
     void setFacing(int facing) {
-        if(!hasFrontCamera){
+        /*if(!hasFrontCamera){
             return;
-        }
+        }*/
         if (mFacing == facing) {
             return;
         }
-        mFacing = facing;
-        if (isCameraOpened()) {
-            stop();
-            start();
+        try {
+            mFacing = facing;
+            if (isCameraOpened()) {
+                stop();
+                start();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -229,39 +233,52 @@ class Camera1 extends CameraViewImpl {
 
     @Override
     void setAutoFocus(boolean autoFocus) {
-        if(!hasAutoFocus){
+        /*if(!hasAutoFocus){
             return;
-        }
+        }*/
         if (mAutoFocus == autoFocus) {
             return;
         }
-        if (setAutoFocusInternal(autoFocus)) {
-            mCamera.setParameters(mCameraParameters);
+        try {
+            if (setAutoFocusInternal(autoFocus)) {
+                mCamera.setParameters(mCameraParameters);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
     @Override
     boolean getAutoFocus() {
-        if(!hasAutoFocus){
+        /*if(!hasAutoFocus){
+            return false;
+        }*/
+        try {
+            if (!isCameraOpened()) {
+                return mAutoFocus;
+            }
+            String focusMode = mCameraParameters.getFocusMode();
+            return focusMode != null && focusMode.contains("continuous");
+        }catch (Exception e){
+            e.printStackTrace();
             return false;
         }
-        if (!isCameraOpened()) {
-            return mAutoFocus;
-        }
-        String focusMode = mCameraParameters.getFocusMode();
-        return focusMode != null && focusMode.contains("continuous");
     }
 
     @Override
     void setFlash(int flash) {
-        if(!hasFlash){
+        /*if(!hasFlash){
             return;
-        }
+        }*/
         if (flash == mFlash) {
             return;
         }
-        if (setFlashInternal(flash)) {
-            mCamera.setParameters(mCameraParameters);
+        try {
+            if (setFlashInternal(flash)) {
+                mCamera.setParameters(mCameraParameters);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -300,8 +317,10 @@ class Camera1 extends CameraViewImpl {
                 public void onPictureTaken(byte[] data, Camera camera) {
                     isPictureCaptureInProgress.set(false);
                     mCallback.onPictureTaken(data);
-                    if(hasAutoFocus) {
+                    try {
                         camera.cancelAutoFocus();
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
                     camera.startPreview();
                 }
@@ -396,11 +415,15 @@ class Camera1 extends CameraViewImpl {
         mCameraParameters.setPreviewSize(size.getWidth(), size.getHeight());
         mCameraParameters.setPictureSize(pictureSize.getWidth(), pictureSize.getHeight());
         mCameraParameters.setRotation(calcCameraRotation(mDisplayOrientation));
-        if(hasAutoFocus) {
+        try {
             setAutoFocusInternal(mAutoFocus);
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        if(hasFlash) {
+        try {
             setFlashInternal(mFlash);
+        }catch (Exception e){
+            e.printStackTrace();
         }
         try {
             mCamera.setParameters(mCameraParameters);

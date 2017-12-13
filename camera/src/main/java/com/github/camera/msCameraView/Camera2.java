@@ -205,17 +205,15 @@ class Camera2 extends CameraViewImpl {
 
     private int mDisplayOrientation;
 
-    Camera2(Callback callback, PreviewImpl preview, Context context) {
+    Camera2(Callback callback, PreviewImpl preview, CameraManager cameraManager) {
         super(callback, preview);
-        mCameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+        mCameraManager = cameraManager;
         mPreview.setCallback(new PreviewImpl.Callback() {
             @Override
             public void onSurfaceChanged() {
                 startCaptureSession();
             }
         });
-        this.context = context;
-        initFeatures();
     }
 
     private void initFeatures(){
@@ -268,16 +266,20 @@ class Camera2 extends CameraViewImpl {
 
     @Override
     void setFacing(int facing) {
-        if(!hasFrontCamera){
+        /*if(!hasFrontCamera){
            return;
-        }
+        }*/
         if (mFacing == facing) {
             return;
         }
-        mFacing = facing;
-        if (isCameraOpened()) {
-            stop();
-            start();
+        try {
+            mFacing = facing;
+            if (isCameraOpened()) {
+                stop();
+                start();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -315,23 +317,27 @@ class Camera2 extends CameraViewImpl {
 
     @Override
     void setAutoFocus(boolean autoFocus) {
-        if(!hasAutoFocus){
+        /*if(!hasAutoFocus){
             return;
-        }
+        }*/
         if (mAutoFocus == autoFocus) {
             return;
         }
-        mAutoFocus = autoFocus;
-        if (mPreviewRequestBuilder != null) {
-            updateAutoFocus();
-            if (mCaptureSession != null) {
-                try {
-                    mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(),
-                            mCaptureCallback, null);
-                } catch (CameraAccessException e) {
-                    mAutoFocus = !mAutoFocus; // Revert
+        try {
+            mAutoFocus = autoFocus;
+            if (mPreviewRequestBuilder != null) {
+                updateAutoFocus();
+                if (mCaptureSession != null) {
+                    try {
+                        mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(),
+                                mCaptureCallback, null);
+                    } catch (CameraAccessException e) {
+                        mAutoFocus = !mAutoFocus; // Revert
+                    }
                 }
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -342,24 +348,28 @@ class Camera2 extends CameraViewImpl {
 
     @Override
     void setFlash(int flash) {
-        if(!hasFlash){
+        /*if(!hasFlash){
             return;
-        }
+        }*/
         if (mFlash == flash) {
             return;
         }
-        int saved = mFlash;
-        mFlash = flash;
-        if (mPreviewRequestBuilder != null) {
-            updateFlash();
-            if (mCaptureSession != null) {
-                try {
-                    mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(),
-                            mCaptureCallback, null);
-                } catch (CameraAccessException e) {
-                    mFlash = saved; // Revert
+        try {
+            int saved = mFlash;
+            mFlash = flash;
+            if (mPreviewRequestBuilder != null) {
+                updateFlash();
+                if (mCaptureSession != null) {
+                    try {
+                        mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(),
+                                mCaptureCallback, null);
+                    } catch (CameraAccessException e) {
+                        mFlash = saved; // Revert
+                    }
                 }
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -559,25 +569,29 @@ class Camera2 extends CameraViewImpl {
      * Updates the internal state of auto-focus to {@link #mAutoFocus}.
      */
     void updateAutoFocus() {
-        if(!hasAutoFocus){
+        /*if(!hasAutoFocus){
             return;
-        }
-        if (mAutoFocus) {
-            int[] modes = mCameraCharacteristics.get(
-                    CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
-            // Auto focus is not supported
-            if (modes == null || modes.length == 0 ||
-                    (modes.length == 1 && modes[0] == CameraCharacteristics.CONTROL_AF_MODE_OFF)) {
-                mAutoFocus = false;
-                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                        CaptureRequest.CONTROL_AF_MODE_OFF);
+        }*/
+        try {
+            if (mAutoFocus) {
+                int[] modes = mCameraCharacteristics.get(
+                        CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
+                // Auto focus is not supported
+                if (modes == null || modes.length == 0 ||
+                        (modes.length == 1 && modes[0] == CameraCharacteristics.CONTROL_AF_MODE_OFF)) {
+                    mAutoFocus = false;
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                            CaptureRequest.CONTROL_AF_MODE_OFF);
+                } else {
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                            CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                }
             } else {
                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                        CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                        CaptureRequest.CONTROL_AF_MODE_OFF);
             }
-        } else {
-            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_OFF);
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -585,40 +599,44 @@ class Camera2 extends CameraViewImpl {
      * Updates the internal state of flash to {@link #mFlash}.
      */
     void updateFlash() {
-        if(!hasFlash){
+        /*if(!hasFlash){
             return;
-        }
-        switch (mFlash) {
-            case Constants.FLASH_OFF:
-                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                        CaptureRequest.CONTROL_AE_MODE_ON);
-                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE,
-                        CaptureRequest.FLASH_MODE_OFF);
-                break;
-            case Constants.FLASH_ON:
-                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                        CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
-                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE,
-                        CaptureRequest.FLASH_MODE_OFF);
-                break;
-            case Constants.FLASH_TORCH:
-                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                        CaptureRequest.CONTROL_AE_MODE_ON);
-                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE,
-                        CaptureRequest.FLASH_MODE_TORCH);
-                break;
-            case Constants.FLASH_AUTO:
-                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                        CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE,
-                        CaptureRequest.FLASH_MODE_OFF);
-                break;
-            case Constants.FLASH_RED_EYE:
-                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                        CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE);
-                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE,
-                        CaptureRequest.FLASH_MODE_OFF);
-                break;
+        }*/
+        try {
+            switch (mFlash) {
+                case Constants.FLASH_OFF:
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                            CaptureRequest.CONTROL_AE_MODE_ON);
+                    mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE,
+                            CaptureRequest.FLASH_MODE_OFF);
+                    break;
+                case Constants.FLASH_ON:
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                            CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+                    mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE,
+                            CaptureRequest.FLASH_MODE_OFF);
+                    break;
+                case Constants.FLASH_TORCH:
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                            CaptureRequest.CONTROL_AE_MODE_ON);
+                    mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE,
+                            CaptureRequest.FLASH_MODE_TORCH);
+                    break;
+                case Constants.FLASH_AUTO:
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                            CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                    mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE,
+                            CaptureRequest.FLASH_MODE_OFF);
+                    break;
+                case Constants.FLASH_RED_EYE:
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                            CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH_REDEYE);
+                    mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE,
+                            CaptureRequest.FLASH_MODE_OFF);
+                    break;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -626,16 +644,20 @@ class Camera2 extends CameraViewImpl {
      * Locks the focus as the first step for a still image capture.
      */
     private void lockFocus() {
-        if(!hasAutoFocus){
+        /*if(!hasAutoFocus){
             return;
-        }
-        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
-                CaptureRequest.CONTROL_AF_TRIGGER_START);
+        }*/
         try {
-            mCaptureCallback.setState(PictureCaptureCallback.STATE_LOCKING);
-            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback, null);
-        } catch (CameraAccessException e) {
-            Log.e(TAG, "Failed to lock focus.", e);
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
+                    CaptureRequest.CONTROL_AF_TRIGGER_START);
+            try {
+                mCaptureCallback.setState(PictureCaptureCallback.STATE_LOCKING);
+                mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback, null);
+            } catch (CameraAccessException e) {
+                Log.e(TAG, "Failed to lock focus.", e);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -707,22 +729,26 @@ class Camera2 extends CameraViewImpl {
      * capturing a still picture.
      */
     void unlockFocus() {
-        if(!hasAutoFocus){
+        /*if(!hasAutoFocus){
             return;
-        }
-        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
-                CaptureRequest.CONTROL_AF_TRIGGER_CANCEL);
+        }*/
         try {
-            mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback, null);
-            updateAutoFocus();
-            updateFlash();
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
-                    CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
-            mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), mCaptureCallback,
-                    null);
-            mCaptureCallback.setState(PictureCaptureCallback.STATE_PREVIEW);
-        } catch (CameraAccessException e) {
-            Log.e(TAG, "Failed to restart camera preview.", e);
+                    CaptureRequest.CONTROL_AF_TRIGGER_CANCEL);
+            try {
+                mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback, null);
+                updateAutoFocus();
+                updateFlash();
+                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
+                        CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
+                mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), mCaptureCallback,
+                        null);
+                mCaptureCallback.setState(PictureCaptureCallback.STATE_PREVIEW);
+            } catch (CameraAccessException e) {
+                Log.e(TAG, "Failed to restart camera preview.", e);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 

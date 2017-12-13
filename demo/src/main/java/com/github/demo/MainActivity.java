@@ -61,27 +61,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if(selectedImage!=null) {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = 4;
-
-                AssetFileDescriptor fileDescriptor = null;
-                try {
-                    fileDescriptor = this.getContentResolver().openAssetFileDescriptor(selectedImage, "r");
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-
-                if(fileDescriptor!=null) {
-                    Bitmap actuallyUsableBitmap = BitmapFactory.decodeFileDescriptor(
-                            fileDescriptor.getFileDescriptor(), null, options);
-                    if(rotation!=0) {
-                        actuallyUsableBitmap = CameraActivity.rotateBitmap(actuallyUsableBitmap, rotation);
-
-                    }
-                    if (actuallyUsableBitmap != null) {
-                        photoView.setImageBitmap(actuallyUsableBitmap);
-                    }
-                }
+                photoView.setImageURI(selectedImage);
 
             }
         }

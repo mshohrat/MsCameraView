@@ -19,14 +19,15 @@ package com.github.camera.msCameraView;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.ImageFormat;
+import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.params.StreamConfigurationMap;
 
 
 @TargetApi(23)
 class Camera2Api23 extends Camera2 {
 
-    Camera2Api23(Callback callback, PreviewImpl preview, Context context) {
-        super(callback, preview, context);
+    Camera2Api23(Callback callback, PreviewImpl preview, CameraManager cameraManager) {
+        super(callback, preview, cameraManager);
     }
 
     @Override
