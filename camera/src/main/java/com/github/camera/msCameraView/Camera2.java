@@ -72,9 +72,9 @@ class Camera2 extends CameraViewImpl {
      */
     private static final int MAX_PREVIEW_HEIGHT = 1080;
 
-    private final CameraManager mCameraManager;
+    private CameraManager mCameraManager;
 
-    private final CameraDevice.StateCallback mCameraDeviceCallback
+    private CameraDevice.StateCallback mCameraDeviceCallback
             = new CameraDevice.StateCallback() {
 
         @Override
@@ -102,7 +102,7 @@ class Camera2 extends CameraViewImpl {
 
     };
 
-    private final CameraCaptureSession.StateCallback mSessionCallback
+    private CameraCaptureSession.StateCallback mSessionCallback
             = new CameraCaptureSession.StateCallback() {
 
         @Override
@@ -205,7 +205,7 @@ class Camera2 extends CameraViewImpl {
 
     private int mDisplayOrientation;
 
-    Camera2(Callback callback, PreviewImpl preview, CameraManager cameraManager) {
+    Camera2(Callback callback, PreviewImpl preview, @NonNull CameraManager cameraManager) {
         super(callback, preview);
         mCameraManager = cameraManager;
         mPreview.setCallback(new PreviewImpl.Callback() {
@@ -286,6 +286,19 @@ class Camera2 extends CameraViewImpl {
     @Override
     int getFacing() {
         return mFacing;
+    }
+
+    @Override
+    void releaseResources() {
+        mCaptureCallback = null;
+        mCameraCharacteristics = null;
+        mCameraDeviceCallback = null;
+        mPreview.removeCallback();
+        mPreview = null;
+        mCallback = null;
+        mSessionCallback = null;
+        mCameraManager = null;
+        context = null;
     }
 
     @Override

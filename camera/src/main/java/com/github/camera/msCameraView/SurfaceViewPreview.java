@@ -29,12 +29,12 @@ import com.github.camera.R;
 
 class SurfaceViewPreview extends PreviewImpl {
 
-    final SurfaceView mSurfaceView;
+    SurfaceView mSurfaceView;
 
     SurfaceViewPreview(Context context, ViewGroup parent) {
-        final View view = View.inflate(context, R.layout.surface_view, parent);
+        View view = View.inflate(context, R.layout.surface_view, parent);
         mSurfaceView = (SurfaceView) view.findViewById(R.id.surface_view);
-        final SurfaceHolder holder = mSurfaceView.getHolder();
+        SurfaceHolder holder = mSurfaceView.getHolder();
         //noinspection deprecation
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         holder.addCallback(new SurfaceHolder.Callback() {

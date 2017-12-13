@@ -49,7 +49,14 @@ public class CameraView extends FrameLayout {
     public static final int FACING_FRONT = Constants.FACING_FRONT;
 
     public void releaseResources() {
-        mImpl = null;
+        mCallbacks.clear();
+        mCallbacks = null;
+        cameraManager = null;
+        if(mImpl!=null){
+            mImpl.releaseResources();
+            mImpl = null;
+        }
+        System.gc();
     }
 
     /** Direction the camera faces relative to device screen. */
@@ -84,11 +91,13 @@ public class CameraView extends FrameLayout {
 
     CameraViewImpl mImpl;
 
-    private final CallbackBridge mCallbacks;
+    CameraManager cameraManager = null;
+
+    private CallbackBridge mCallbacks;
 
     private boolean mAdjustViewBounds;
 
-    private final DisplayOrientationDetector mDisplayOrientationDetector;
+    private DisplayOrientationDetector mDisplayOrientationDetector;
 
     public CameraView(Context context) {
         this(context, null);
@@ -106,16 +115,17 @@ public class CameraView extends FrameLayout {
             mDisplayOrientationDetector = null;
             return;
         }
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+        }
         // Internal setup
         final PreviewImpl preview = createPreviewImpl(context);
         mCallbacks = new CallbackBridge();
         if (Build.VERSION.SDK_INT < 21) {
             mImpl = new Camera1(mCallbacks, preview);
         } else if (Build.VERSION.SDK_INT < 23) {
-            CameraManager cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
             mImpl = new Camera2(mCallbacks, preview, cameraManager);
         } else {
-            CameraManager cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
             mImpl = new Camera2Api23(mCallbacks, preview, cameraManager);
         }
         // Attributes
@@ -436,6 +446,12 @@ public class CameraView extends FrameLayout {
 
         public void remove(Callback callback) {
             mCallbacks.remove(callback);
+        }
+
+        public void clear(){
+            for(Callback callback : mCallbacks){
+                mCallbacks.remove(callback);
+            }
         }
 
         @Override

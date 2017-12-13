@@ -31,12 +31,12 @@ import com.github.camera.R;
 @TargetApi(14)
 class TextureViewPreview extends PreviewImpl {
 
-    private final TextureView mTextureView;
+    private TextureView mTextureView;
 
     private int mDisplayOrientation;
 
     TextureViewPreview(Context context, ViewGroup parent) {
-        final View view = View.inflate(context, R.layout.texture_view, parent);
+        View view = View.inflate(context, R.layout.texture_view, parent);
         mTextureView = (TextureView) view.findViewById(R.id.texture_view);
         mTextureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
 

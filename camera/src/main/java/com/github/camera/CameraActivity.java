@@ -21,6 +21,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -68,6 +69,8 @@ public class CameraActivity extends AppCompatActivity {
 
     private Handler mBackgroundHandler;
 
+    FrameLayout rootLayout;
+
     ProgressBar progressBar;
 
     LinearLayout submitLayer;
@@ -95,6 +98,10 @@ public class CameraActivity extends AppCompatActivity {
     boolean hasFrontCamera;
 
     private Handler mHandler;
+
+    private Handler permissionHandler;
+
+    private PackageManager packageManager;
 
     private final int DEFAULT_MIN_WIDTH_QUALITY = 768;        // min pixels
     private final int DEFAULT_MIN_HEIGHT_QUALITY = 1024;        // min pixels
@@ -298,14 +305,18 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void initFeatures(){
-        hasAutoFocus = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS);
+        if(packageManager==null){
+            packageManager = getPackageManager();
+        }
+        hasAutoFocus = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_AUTOFOCUS);
 
-        hasFlash = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
+        hasFlash = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
 
-        hasFrontCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT);
+        hasFrontCamera = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT);
     }
 
     private void initViews() {
+        rootLayout = (FrameLayout)findViewById(R.id.camera_root_view);
         cameraView = (CameraView) findViewById(R.id.camera_view);
         progressBar = (ProgressBar)findViewById(R.id.progress);
         submitLayer = (LinearLayout)findViewById(R.id.submit_layer);
@@ -495,9 +506,15 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void requestPermissions(final boolean isCreated) {
-        PermissionHelper.RequestRuntimePermission(this, new String[]{PermissionHelper.CAMERA_PERMISSION,PermissionHelper.READ_STORAGE_PERMISSION,PermissionHelper.WRITE_STORAGE_PERMISSION}, PermissionHelper.REQUEST_CODE_PERMISSION_CAMERA);
-        final Handler handler = new Handler(getMainLooper());
-        handler.postDelayed(new Runnable() {
+        PermissionHelper.RequestRuntimePermission(this, new String[]{
+                PermissionHelper.CAMERA_PERMISSION,
+                PermissionHelper.READ_STORAGE_PERMISSION,
+                PermissionHelper.WRITE_STORAGE_PERMISSION},
+                PermissionHelper.REQUEST_CODE_PERMISSION_CAMERA);
+        if(permissionHandler==null){
+            permissionHandler = new Handler(getMainLooper());
+        }
+        permissionHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if(CameraActivity.this.isFinishing())
@@ -518,7 +535,9 @@ public class CameraActivity extends AppCompatActivity {
                         getIntentDate(getIntent());
                     }
                 }else {
-                    handler.postDelayed(this,1000);
+                    if(permissionHandler!=null) {
+                        permissionHandler.postDelayed(this, 1000);
+                    }
                 }
             }
         },1000);
@@ -616,9 +635,16 @@ public class CameraActivity extends AppCompatActivity {
             mediaPlayer.release();
             mediaPlayer = null;
         }
+        packageManager = null;
         cameraView.releaseResources();
         cameraView = null;
         mCallback = null;
+        mHandler = null;
+        permissionHandler = null;
+        submitLayer.removeAllViews();
+        submitLayer = null;
+        rootLayout.removeAllViews();
+        rootLayout = null;
     }
 
     @Override

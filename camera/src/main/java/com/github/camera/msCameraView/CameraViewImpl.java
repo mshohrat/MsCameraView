@@ -22,9 +22,9 @@ import java.util.Set;
 
 abstract class CameraViewImpl {
 
-    protected final Callback mCallback;
+    protected Callback mCallback;
 
-    protected final PreviewImpl mPreview;
+    protected PreviewImpl mPreview;
 
     CameraViewImpl(Callback callback, PreviewImpl preview) {
         mCallback = callback;
@@ -47,6 +47,8 @@ abstract class CameraViewImpl {
     abstract void setFacing(int facing);
 
     abstract int getFacing();
+
+    abstract void releaseResources();
 
     abstract Set<AspectRatio> getSupportedAspectRatios();
 

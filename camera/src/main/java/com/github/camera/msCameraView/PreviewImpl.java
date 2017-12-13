@@ -40,6 +40,10 @@ abstract class PreviewImpl {
         mCallback = callback;
     }
 
+    void removeCallback(){
+        mCallback = null;
+    }
+
     abstract Surface getSurface();
 
     abstract View getView();

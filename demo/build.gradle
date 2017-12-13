@@ -28,6 +28,7 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:25.3.0'
 
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5.1'
     testCompile 'junit:junit:4.12'
     compile project(path: ':camera')
 }

@@ -83,7 +83,7 @@ class Camera1 extends CameraViewImpl {
 
     Camera1(Callback callback, PreviewImpl preview) {
         super(callback, preview);
-        preview.setCallback(new PreviewImpl.Callback() {
+        mPreview.setCallback(new PreviewImpl.Callback() {
             @Override
             public void onSurfaceChanged() {
                 if (mCamera != null) {
@@ -194,6 +194,14 @@ class Camera1 extends CameraViewImpl {
     @Override
     int getFacing() {
         return mFacing;
+    }
+
+    @Override
+    void releaseResources() {
+        mPreview.removeCallback();
+        mPreview = null;
+        mCallback = null;
+        context = null;
     }
 
     @Override
