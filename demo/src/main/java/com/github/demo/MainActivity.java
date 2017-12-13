@@ -18,7 +18,7 @@ import java.io.FileNotFoundException;
 
 import com.github.camera.CameraActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     Button takePhotoButton;
     ImageView photoView;
@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
                 photoView.setImageURI(selectedImage);
 
             }
+            data = null;
         }
     }
 }

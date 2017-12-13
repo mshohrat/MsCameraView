@@ -55,9 +55,9 @@ class Camera2 extends CameraViewImpl {
 
     private boolean hasFrontCamera;
 
-    private static final SparseIntArray INTERNAL_FACINGS = new SparseIntArray();
+    private SparseIntArray INTERNAL_FACINGS = new SparseIntArray();
 
-    static {
+    {
         INTERNAL_FACINGS.put(Constants.FACING_BACK, CameraCharacteristics.LENS_FACING_BACK);
         INTERNAL_FACINGS.put(Constants.FACING_FRONT, CameraCharacteristics.LENS_FACING_FRONT);
     }
@@ -65,12 +65,12 @@ class Camera2 extends CameraViewImpl {
     /**
      * Max preview width that is guaranteed by Camera2 API
      */
-    private static final int MAX_PREVIEW_WIDTH = 1920;
+    private int MAX_PREVIEW_WIDTH = 1920;
 
     /**
      * Max preview height that is guaranteed by Camera2 API
      */
-    private static final int MAX_PREVIEW_HEIGHT = 1080;
+    private int MAX_PREVIEW_HEIGHT = 1080;
 
     private CameraManager mCameraManager;
 
@@ -160,7 +160,7 @@ class Camera2 extends CameraViewImpl {
 
     };
 
-    private final ImageReader.OnImageAvailableListener mOnImageAvailableListener
+    private ImageReader.OnImageAvailableListener mOnImageAvailableListener
             = new ImageReader.OnImageAvailableListener() {
 
         @Override
@@ -290,6 +290,9 @@ class Camera2 extends CameraViewImpl {
 
     @Override
     void releaseResources() {
+        mCaptureSession = null;
+        mOnImageAvailableListener = null;
+        mImageReader = null;
         mCaptureCallback = null;
         mCameraCharacteristics = null;
         mCameraDeviceCallback = null;

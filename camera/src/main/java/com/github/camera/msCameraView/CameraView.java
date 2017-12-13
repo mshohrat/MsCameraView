@@ -49,6 +49,9 @@ public class CameraView extends FrameLayout {
     public static final int FACING_FRONT = Constants.FACING_FRONT;
 
     public void releaseResources() {
+        removeAllViews();
+        mPreview.removeCallback();
+        mPreview = null;
         mCallbacks.clear();
         mCallbacks = null;
         cameraManager = null;
@@ -91,6 +94,10 @@ public class CameraView extends FrameLayout {
 
     CameraViewImpl mImpl;
 
+    PreviewImpl mPreview = null;
+
+    Context context;
+
     CameraManager cameraManager = null;
 
     private CallbackBridge mCallbacks;
@@ -110,6 +117,7 @@ public class CameraView extends FrameLayout {
     @SuppressWarnings("WrongConstant")
     public CameraView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        this.context = context;
         if (isInEditMode()){
             mCallbacks = null;
             mDisplayOrientationDetector = null;
@@ -119,14 +127,16 @@ public class CameraView extends FrameLayout {
             cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
         }
         // Internal setup
-        final PreviewImpl preview = createPreviewImpl(context);
+        if(mPreview==null){
+            mPreview = createPreviewImpl(context);
+        }
         mCallbacks = new CallbackBridge();
         if (Build.VERSION.SDK_INT < 21) {
-            mImpl = new Camera1(mCallbacks, preview);
+            mImpl = new Camera1(mCallbacks, mPreview);
         } else if (Build.VERSION.SDK_INT < 23) {
-            mImpl = new Camera2(mCallbacks, preview, cameraManager);
+            mImpl = new Camera2(mCallbacks, mPreview, cameraManager);
         } else {
-            mImpl = new Camera2Api23(mCallbacks, preview, cameraManager);
+            mImpl = new Camera2Api23(mCallbacks, mPreview, cameraManager);
         }
         // Attributes
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CameraView, defStyleAttr,
@@ -271,7 +281,10 @@ public class CameraView extends FrameLayout {
             //store the state ,and restore this state after fall back o Camera1
             Parcelable state=onSaveInstanceState();
             // Camera2 uses legacy hardware layer; fall back to Camera1
-            mImpl = new Camera1(mCallbacks, createPreviewImpl(getContext()));
+            if(mPreview==null){
+                mPreview = createPreviewImpl(context);
+            }
+            mImpl = new Camera1(mCallbacks, mPreview);
             onRestoreInstanceState(state);
             mImpl.start();
         }

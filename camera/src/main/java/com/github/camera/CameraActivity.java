@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.drawable.Drawable;
 import android.media.ExifInterface;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -14,11 +13,8 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -27,17 +23,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.Request;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.target.SizeReadyCallback;
-import com.bumptech.glide.request.target.Target;
 import com.github.camera.msCameraView.CameraView;
 import com.github.camera.util.PermissionHelper;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -211,6 +199,7 @@ public class CameraActivity extends AppCompatActivity {
         }
 
         photoTakenUri = Uri.fromFile(file);
+        file = null;
         takenPhotoView.setImageURI(null);
         takenPhotoView.setImageURI(photoTakenUri);
         takenPhotoView.setVisibility(View.VISIBLE);
@@ -297,9 +286,12 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void checkCameraFeature(){
-        hasCamera = getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
+        if(packageManager==null){
+            packageManager = getPackageManager();
+        }
+        hasCamera = packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA);
         if(!hasCamera){
-            Toast.makeText(this,getResources().getString(R.string.your_device_has_not_camera_feature),Toast.LENGTH_LONG).show();
+            Toast.makeText(this,"دوربین دستگاه شما حداقل امکانات مورد نیاز را ندارد",Toast.LENGTH_LONG).show();
             finish();
         }
     }
@@ -378,10 +370,11 @@ public class CameraActivity extends AppCompatActivity {
         Intent output = new Intent();
         output.setData(photoTakenUri);
         setResult(RESULT_OK,output);
+        photoTakenUri = null;
         finish();
     }
 
-    private int calculateBitmapRotation(byte[] photoTakenByteData) {
+    /*private int calculateBitmapRotation(byte[] photoTakenByteData) {
         if(cameraView==null || photoTakenByteData==null)
             return 0;
         int rotation = 0;
@@ -400,9 +393,9 @@ public class CameraActivity extends AppCompatActivity {
             }
         }
         return rotation;
-    }
+    }*/
 
-    private int getDisplayHeight(){
+    /*private int getDisplayHeight(){
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         return displayMetrics.heightPixels;
@@ -412,9 +405,9 @@ public class CameraActivity extends AppCompatActivity {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         return displayMetrics.widthPixels;
-    }
+    }*/
 
-    private boolean isPictureOutOfDisplayBounds(byte[] data){
+    /*private boolean isPictureOutOfDisplayBounds(byte[] data){
         if(cameraView==null || data==null)
             return false;
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -427,7 +420,7 @@ public class CameraActivity extends AppCompatActivity {
         }else {
             return false;
         }
-    }
+    }*/
 
     public void cancelPhotoClicked(){
         submitLayer.setVisibility(View.GONE);
@@ -451,7 +444,7 @@ public class CameraActivity extends AppCompatActivity {
                     cameraView.start();
                 }catch (Exception e){
                     e.printStackTrace();
-                    Toast.makeText(this,getResources().getString(R.string.your_device_camera_has_not_minimum_features),Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,"دوربین دستگاه شما حداقل امکانات مورد نیاز را ندارد",Toast.LENGTH_LONG).show();
                     finish();
                 }
             }
@@ -526,7 +519,7 @@ public class CameraActivity extends AppCompatActivity {
                                 cameraView.start();
                             }catch (Exception e){
                                 e.printStackTrace();
-                                Toast.makeText(CameraActivity.this,getResources().getString(R.string.your_device_camera_has_not_minimum_features),Toast.LENGTH_LONG).show();
+                                Toast.makeText(CameraActivity.this,"دوربین دستگاه شما حداقل امکانات مورد نیاز را ندارد",Toast.LENGTH_LONG).show();
                                 finish();
                             }
                         }
@@ -560,7 +553,7 @@ public class CameraActivity extends AppCompatActivity {
                     cameraView.start();
                 }catch (Exception e){
                     e.printStackTrace();
-                    Toast.makeText(this,getResources().getString(R.string.your_device_camera_has_not_minimum_features),Toast.LENGTH_LONG).show();
+                    Toast.makeText(this,"دوربین دستگاه شما حداقل امکانات مورد نیاز را ندارد",Toast.LENGTH_LONG).show();
                     finish();
                 }
             }
@@ -574,7 +567,7 @@ public class CameraActivity extends AppCompatActivity {
             cameraView.start();
         }catch (Exception e){
             e.printStackTrace();
-            Toast.makeText(this,getResources().getString(R.string.your_device_camera_has_not_minimum_features),Toast.LENGTH_LONG).show();
+            Toast.makeText(this,"دوربین دستگاه شما حداقل امکانات مورد نیاز را ندارد",Toast.LENGTH_LONG).show();
             finish();
         }
         if(!hasFlash){
@@ -637,14 +630,22 @@ public class CameraActivity extends AppCompatActivity {
         }
         packageManager = null;
         cameraView.releaseResources();
-        cameraView = null;
         mCallback = null;
         mHandler = null;
         permissionHandler = null;
         submitLayer.removeAllViews();
-        submitLayer = null;
         rootLayout.removeAllViews();
+        cameraView = null;
+        progressBar = null;
+        submitPhotoBt = null;
+        cancelPhotoBt = null;
+        takenPhotoView = null;
+        takePhotoBt = null;
+        changeFlashStatusBt = null;
+        switchCameraFaceBt = null;
+        submitLayer = null;
         rootLayout = null;
+        flashStatusIcons = null;
     }
 
     @Override
@@ -653,6 +654,11 @@ public class CameraActivity extends AppCompatActivity {
         if(cameraView!=null) {
             cameraView.stop();
         }
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
     }
 
     private Handler getBackgroundHandler() {
