@@ -129,6 +129,7 @@ public class CameraActivity extends AppCompatActivity {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeByteArray(data,0,data.length,options);
+        int orientation = calculateBitmapRotation(data);
         int maxHeight = DEFAULT_MIN_HEIGHT_QUALITY;
         int maxWidth = DEFAULT_MIN_WIDTH_QUALITY;
         options.inSampleSize = calculateInSampleSize(options,maxWidth,maxHeight);
@@ -155,19 +156,20 @@ public class CameraActivity extends AppCompatActivity {
             outputStream = null;
         }
 
-        ExifInterface exif;
+        //ExifInterface exif;
         try {
-            exif = new ExifInterface(file.getAbsolutePath());
-            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
+            //exif = new ExifInterface(file.getAbsolutePath());
+            //int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 0);
             if(orientation!=0){
                 Matrix matrix = new Matrix();
-                if (orientation == 6) {
+                matrix.postRotate(orientation);
+                /*if (orientation == 6) {
                     matrix.postRotate(90);
                 } else if (orientation == 3) {
                     matrix.postRotate(180);
                 } else if (orientation == 8) {
                     matrix.postRotate(270);
-                }
+                }*/
                 if(bitmap!=null) {
                     bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix,true);
                     FileOutputStream mOutputStream;
@@ -186,7 +188,6 @@ public class CameraActivity extends AppCompatActivity {
                         System.gc();
                     }
                 }
-                exif = null;
             }else {
                 if(bitmap!=null){
                     bitmap.recycle();
@@ -194,12 +195,13 @@ public class CameraActivity extends AppCompatActivity {
                 }
             }
 
-        }catch (IOException e){
+        }catch (Exception e){
             e.printStackTrace();
         }
 
         photoTakenUri = Uri.fromFile(file);
         file = null;
+        data = null;
         takenPhotoView.setImageURI(null);
         takenPhotoView.setImageURI(photoTakenUri);
         takenPhotoView.setVisibility(View.VISIBLE);
@@ -374,15 +376,17 @@ public class CameraActivity extends AppCompatActivity {
         finish();
     }
 
-    /*private int calculateBitmapRotation(byte[] photoTakenByteData) {
+    private int calculateBitmapRotation(byte[] photoTakenByteData) {
         if(cameraView==null || photoTakenByteData==null)
             return 0;
         int rotation = 0;
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inMutable = true;
+        options.inSampleSize = 20;
         // First decode with inJustDecodeBounds=true to check dimensions
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeByteArray(photoTakenByteData, 0, photoTakenByteData.length, options);
+        System.gc();
+        Bitmap bm = BitmapFactory.decodeByteArray(photoTakenByteData, 0, photoTakenByteData.length, options);
         if(cameraView.getFacing()==CameraView.FACING_BACK){
             if(options.outWidth>options.outHeight){
                 rotation = 90;
@@ -392,8 +396,13 @@ public class CameraActivity extends AppCompatActivity {
                 rotation = 270;
             }
         }
+        if(bm!=null){
+            bm.recycle();
+            bm = null;
+            System.gc();
+        }
         return rotation;
-    }*/
+    }
 
     /*private int getDisplayHeight(){
         DisplayMetrics displayMetrics = new DisplayMetrics();
