@@ -163,7 +163,8 @@ class Camera1 extends CameraViewImpl {
                 mCamera.setPreviewTexture((SurfaceTexture) mPreview.getSurfaceTexture());
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            //throw new RuntimeException(e);
         }
     }
 
@@ -198,7 +199,9 @@ class Camera1 extends CameraViewImpl {
 
     @Override
     void releaseResources() {
-        mPreview.removeCallback();
+        if(mPreview!=null) {
+            mPreview.removeCallback();
+        }
         mPreview = null;
         mCallback = null;
         context = null;
@@ -224,7 +227,8 @@ class Camera1 extends CameraViewImpl {
         } else if (!mAspectRatio.equals(ratio)) {
             final Set<Size> sizes = mPreviewSizes.sizes(ratio);
             if (sizes == null) {
-                throw new UnsupportedOperationException(ratio + " is not supported");
+                return false;
+                //throw new UnsupportedOperationException(ratio + " is not supported");
             } else {
                 mAspectRatio = ratio;
                 adjustCameraParameters();
@@ -299,8 +303,9 @@ class Camera1 extends CameraViewImpl {
     void takePicture() {
         try {
             if (!isCameraOpened()) {
-                throw new IllegalStateException(
-                        "Camera is not ready. Call start() before takePicture().");
+                return;
+                /*throw new IllegalStateException(
+                        "Camera is not ready. Call start() before takePicture().");*/
             }
             if (getAutoFocus()) {
                 mCamera.cancelAutoFocus();
@@ -324,7 +329,9 @@ class Camera1 extends CameraViewImpl {
                 @Override
                 public void onPictureTaken(byte[] data, Camera camera) {
                     isPictureCaptureInProgress.set(false);
-                    mCallback.onPictureTaken(data);
+                    if(mCallback!=null) {
+                        mCallback.onPictureTaken(data);
+                    }
                     try {
                         camera.cancelAutoFocus();
                     }catch (Exception e){
@@ -392,7 +399,9 @@ class Camera1 extends CameraViewImpl {
         }
         adjustCameraParameters();
         mCamera.setDisplayOrientation(calcDisplayOrientation(mDisplayOrientation));
-        mCallback.onCameraOpened();
+        if(mCallback!=null) {
+            mCallback.onCameraOpened();
+        }
     }
 
     private AspectRatio chooseAspectRatio() {
@@ -474,7 +483,9 @@ class Camera1 extends CameraViewImpl {
         if (mCamera != null) {
             mCamera.release();
             mCamera = null;
-            mCallback.onCameraClosed();
+            if(mCallback!=null) {
+                mCallback.onCameraClosed();
+            }
         }
     }
 

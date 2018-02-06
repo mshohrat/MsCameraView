@@ -80,13 +80,17 @@ class Camera2 extends CameraViewImpl {
         @Override
         public void onOpened(@NonNull CameraDevice camera) {
             mCamera = camera;
-            mCallback.onCameraOpened();
+            if(mCallback!=null) {
+                mCallback.onCameraOpened();
+            }
             startCaptureSession();
         }
 
         @Override
         public void onClosed(@NonNull CameraDevice camera) {
-            mCallback.onCameraClosed();
+            if(mCallback!=null) {
+                mCallback.onCameraClosed();
+            }
         }
 
         @Override
@@ -171,7 +175,9 @@ class Camera2 extends CameraViewImpl {
                     ByteBuffer buffer = planes[0].getBuffer();
                     byte[] data = new byte[buffer.remaining()];
                     buffer.get(data);
-                    mCallback.onPictureTaken(data);
+                    if(mCallback!=null) {
+                        mCallback.onPictureTaken(data);
+                    }
                 }
             }
         }
@@ -296,7 +302,9 @@ class Camera2 extends CameraViewImpl {
         mCaptureCallback = null;
         mCameraCharacteristics = null;
         mCameraDeviceCallback = null;
-        mPreview.removeCallback();
+        if(mPreview!=null) {
+            mPreview.removeCallback();
+        }
         mPreview = null;
         mCallback = null;
         mSessionCallback = null;
@@ -423,7 +431,8 @@ class Camera2 extends CameraViewImpl {
             int internalFacing = INTERNAL_FACINGS.get(mFacing);
             final String[] ids = mCameraManager.getCameraIdList();
             if (ids.length == 0) { // No camera
-                throw new RuntimeException("No camera available.");
+                return false;
+                //throw new RuntimeException("No camera available.");
             }
             for (String id : ids) {
                 CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(id);
@@ -435,7 +444,8 @@ class Camera2 extends CameraViewImpl {
                 }
                 Integer internal = characteristics.get(CameraCharacteristics.LENS_FACING);
                 if (internal == null) {
-                    throw new NullPointerException("Unexpected state: LENS_FACING null");
+                    return false;
+                    //throw new NullPointerException("Unexpected state: LENS_FACING null");
                 }
                 if (internal == internalFacing) {
                     mCameraId = id;
@@ -454,7 +464,8 @@ class Camera2 extends CameraViewImpl {
             }
             Integer internal = mCameraCharacteristics.get(CameraCharacteristics.LENS_FACING);
             if (internal == null) {
-                throw new NullPointerException("Unexpected state: LENS_FACING null");
+                return false;
+                //throw new NullPointerException("Unexpected state: LENS_FACING null");
             }
             for (int i = 0, count = INTERNAL_FACINGS.size(); i < count; i++) {
                 if (INTERNAL_FACINGS.valueAt(i) == internal) {
@@ -467,7 +478,9 @@ class Camera2 extends CameraViewImpl {
             mFacing = Constants.FACING_BACK;
             return true;
         } catch (CameraAccessException e) {
-            throw new RuntimeException("Failed to get a list of camera devices", e);
+            e.printStackTrace();
+            //throw new RuntimeException("Failed to get a list of camera devices", e);
+            return false;
         }
     }
 
@@ -480,7 +493,8 @@ class Camera2 extends CameraViewImpl {
         StreamConfigurationMap map = mCameraCharacteristics.get(
                 CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         if (map == null) {
-            throw new IllegalStateException("Failed to get configuration map: " + mCameraId);
+            //throw new IllegalStateException("Failed to get configuration map: " + mCameraId);
+            return;
         }
         mPreviewSizes.clear();
         for (android.util.Size size : map.getOutputSizes(mPreview.getOutputClass())) {
@@ -527,7 +541,8 @@ class Camera2 extends CameraViewImpl {
         try {
             mCameraManager.openCamera(mCameraId, mCameraDeviceCallback, null);
         } catch (CameraAccessException e) {
-            throw new RuntimeException("Failed to open camera: " + mCameraId, e);
+            e.printStackTrace();
+            //throw new RuntimeException("Failed to open camera: " + mCameraId, e);
         }
     }
 
@@ -549,7 +564,8 @@ class Camera2 extends CameraViewImpl {
             mCamera.createCaptureSession(Arrays.asList(surface, mImageReader.getSurface()),
                     mSessionCallback, null);
         } catch (CameraAccessException e) {
-            throw new RuntimeException("Failed to start camera session");
+            e.printStackTrace();
+            //throw new RuntimeException("Failed to start camera session");
         }
     }
 

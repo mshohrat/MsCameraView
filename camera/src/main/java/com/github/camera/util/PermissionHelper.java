@@ -43,7 +43,8 @@ public class PermissionHelper {
 
     public static void RequestRuntimePermission(Activity activity, String[] permissions, int permissionCode){
         if(permissions == null){
-            throw new IllegalArgumentException();
+            return;
+            //throw new IllegalArgumentException();
         }
         ActivityCompat.requestPermissions(activity,permissions,permissionCode);
     }

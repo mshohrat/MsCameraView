@@ -50,9 +50,14 @@ public class CameraView extends FrameLayout {
 
     public void releaseResources() {
         removeAllViews();
-        mPreview.removeCallback();
+        if(mPreview!=null) {
+            mPreview.removeCallback();
+        }
         mPreview = null;
-        mCallbacks.clear();
+        if(mCallbacks!=null)
+        {
+            mCallbacks.clear();
+        }
         mCallbacks = null;
         cameraManager = null;
         if(mImpl!=null){
@@ -145,7 +150,12 @@ public class CameraView extends FrameLayout {
         setFacing(a.getInt(R.styleable.CameraView_facing, FACING_BACK));
         String aspectRatio = a.getString(R.styleable.CameraView_aspectRatio);
         if (aspectRatio != null) {
-            setAspectRatio(AspectRatio.parse(aspectRatio));
+            AspectRatio ratio = AspectRatio.parse(aspectRatio);
+            if(ratio!=null) {
+                setAspectRatio(ratio);
+            }else {
+                setAspectRatio(Constants.DEFAULT_ASPECT_RATIO);
+            }
         } else {
             setAspectRatio(Constants.DEFAULT_ASPECT_RATIO);
         }
@@ -156,6 +166,9 @@ public class CameraView extends FrameLayout {
         mDisplayOrientationDetector = new DisplayOrientationDetector(context) {
             @Override
             public void onDisplayOrientationChanged(int displayOrientation) {
+                if(mImpl==null){
+                    return;
+                }
                 mImpl.setDisplayOrientation(displayOrientation);
             }
         };
@@ -235,6 +248,9 @@ public class CameraView extends FrameLayout {
             ratio = ratio.inverse();
         }
         assert ratio != null;
+        if(mImpl==null){
+            return;
+        }
         if (height < width * ratio.getY() / ratio.getX()) {
             mImpl.getView().measure(
                     MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
@@ -277,7 +293,7 @@ public class CameraView extends FrameLayout {
      * {@link Activity#onResume()}.
      */
     public void start() {
-        if (!mImpl.start()) {
+        if (mImpl!=null && !mImpl.start()) {
             //store the state ,and restore this state after fall back o Camera1
             Parcelable state=onSaveInstanceState();
             // Camera2 uses legacy hardware layer; fall back to Camera1
@@ -295,6 +311,9 @@ public class CameraView extends FrameLayout {
      * {@link Activity#onPause()}.
      */
     public void stop() {
+        if(mImpl==null){
+            return;
+        }
         mImpl.stop();
     }
 
@@ -302,7 +321,7 @@ public class CameraView extends FrameLayout {
      * @return {@code true} if the camera is opened.
      */
     public boolean isCameraOpened() {
-        return mImpl.isCameraOpened();
+        return mImpl!=null && mImpl.isCameraOpened();
     }
 
     /**
@@ -353,6 +372,9 @@ public class CameraView extends FrameLayout {
      *               {@link #FACING_FRONT}.
      */
     public void setFacing(@Facing int facing) {
+        if(mImpl==null){
+            return;
+        }
         mImpl.setFacing(facing);
     }
 
@@ -364,6 +386,9 @@ public class CameraView extends FrameLayout {
     @Facing
     public int getFacing() {
         //noinspection WrongConstant
+        if(mImpl==null){
+            return FACING_BACK;
+        }
         return mImpl.getFacing();
     }
 
@@ -371,6 +396,9 @@ public class CameraView extends FrameLayout {
      * Gets all the aspect ratios supported by the current camera.
      */
     public Set<AspectRatio> getSupportedAspectRatios() {
+        if(mImpl==null){
+            return null;
+        }
         return mImpl.getSupportedAspectRatios();
     }
 
@@ -380,6 +408,9 @@ public class CameraView extends FrameLayout {
      * @param ratio The {@link AspectRatio} to be set.
      */
     public void setAspectRatio(@NonNull AspectRatio ratio) {
+        if(mImpl==null){
+            return;
+        }
         if (mImpl.setAspectRatio(ratio)) {
             requestLayout();
         }
@@ -392,6 +423,9 @@ public class CameraView extends FrameLayout {
      */
     @Nullable
     public AspectRatio getAspectRatio() {
+        if(mImpl==null){
+            return null;
+        }
         return mImpl.getAspectRatio();
     }
 
@@ -403,6 +437,9 @@ public class CameraView extends FrameLayout {
      *                  disable it.
      */
     public void setAutoFocus(boolean autoFocus) {
+        if(mImpl==null){
+            return;
+        }
         mImpl.setAutoFocus(autoFocus);
     }
 
@@ -413,6 +450,9 @@ public class CameraView extends FrameLayout {
      * disabled, or if it is not supported by the current camera.
      */
     public boolean getAutoFocus() {
+        if(mImpl==null){
+            return false;
+        }
         return mImpl.getAutoFocus();
     }
 
@@ -422,6 +462,9 @@ public class CameraView extends FrameLayout {
      * @param flash The desired flash mode.
      */
     public void setFlash(@Flash int flash) {
+        if(mImpl==null){
+            return;
+        }
         mImpl.setFlash(flash);
     }
 
@@ -433,6 +476,9 @@ public class CameraView extends FrameLayout {
     @Flash
     public int getFlash() {
         //noinspection WrongConstant
+        if(mImpl==null){
+            return FLASH_OFF;
+        }
         return mImpl.getFlash();
     }
 
@@ -441,6 +487,9 @@ public class CameraView extends FrameLayout {
      * {@link Callback#onPictureTaken(CameraView, byte[])}.
      */
     public void takePicture() {
+        if(mImpl==null){
+            return;
+        }
         mImpl.takePicture();
     }
 

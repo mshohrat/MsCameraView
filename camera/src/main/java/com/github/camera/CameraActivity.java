@@ -631,19 +631,24 @@ public class CameraActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         if(mediaPlayer!=null){
             mediaPlayer.stop();
             mediaPlayer.release();
             mediaPlayer = null;
         }
         packageManager = null;
-        cameraView.releaseResources();
+        if(cameraView!=null) {
+            cameraView.releaseResources();
+        }
         mCallback = null;
         mHandler = null;
         permissionHandler = null;
-        submitLayer.removeAllViews();
-        rootLayout.removeAllViews();
+        if(submitLayer!=null) {
+            submitLayer.removeAllViews();
+        }
+        if(rootLayout!=null) {
+            rootLayout.removeAllViews();
+        }
         cameraView = null;
         progressBar = null;
         submitPhotoBt = null;
@@ -655,14 +660,15 @@ public class CameraActivity extends AppCompatActivity {
         submitLayer = null;
         rootLayout = null;
         flashStatusIcons = null;
+        super.onDestroy();
     }
 
     @Override
     protected void onPause() {
-        super.onPause();
         if(cameraView!=null) {
             cameraView.stop();
         }
+        super.onPause();
     }
 
     @Override

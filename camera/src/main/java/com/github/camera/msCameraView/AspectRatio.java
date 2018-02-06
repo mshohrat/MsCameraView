@@ -71,14 +71,16 @@ public class AspectRatio implements Comparable<AspectRatio>, Parcelable {
     public static AspectRatio parse(String s) {
         int position = s.indexOf(':');
         if (position == -1) {
-            throw new IllegalArgumentException("Malformed aspect ratio: " + s);
+            //throw new IllegalArgumentException("Malformed aspect ratio: " + s);
+            return null;
         }
         try {
             int x = Integer.parseInt(s.substring(0, position));
             int y = Integer.parseInt(s.substring(position + 1));
             return AspectRatio.of(x, y);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Malformed aspect ratio: " + s, e);
+            //throw new IllegalArgumentException("Malformed aspect ratio: " + s, e);
+            return null;
         }
     }
 
