@@ -324,22 +324,26 @@ class Camera1 extends CameraViewImpl {
     }
 
     void takePictureInternal() {
-        if (!isPictureCaptureInProgress.getAndSet(true)) {
-            mCamera.takePicture(null, null, null, new Camera.PictureCallback() {
-                @Override
-                public void onPictureTaken(byte[] data, Camera camera) {
-                    isPictureCaptureInProgress.set(false);
-                    if(mCallback!=null) {
-                        mCallback.onPictureTaken(data);
+        try {
+            if (!isPictureCaptureInProgress.getAndSet(true)) {
+                mCamera.takePicture(null, null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        isPictureCaptureInProgress.set(false);
+                        if(mCallback!=null) {
+                            mCallback.onPictureTaken(data);
+                        }
+                        try {
+                            camera.cancelAutoFocus();
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        camera.startPreview();
                     }
-                    try {
-                        camera.cancelAutoFocus();
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                    camera.startPreview();
-                }
-            });
+                });
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -350,15 +354,19 @@ class Camera1 extends CameraViewImpl {
         }
         mDisplayOrientation = displayOrientation;
         if (isCameraOpened()) {
-            mCameraParameters.setRotation(calcCameraRotation(displayOrientation));
-            mCamera.setParameters(mCameraParameters);
-            final boolean needsToStopPreview = mShowingPreview && Build.VERSION.SDK_INT < 14;
-            if (needsToStopPreview) {
-                mCamera.stopPreview();
-            }
-            mCamera.setDisplayOrientation(calcDisplayOrientation(displayOrientation));
-            if (needsToStopPreview) {
-                mCamera.startPreview();
+            try {
+                mCameraParameters.setRotation(calcCameraRotation(displayOrientation));
+                mCamera.setParameters(mCameraParameters);
+                final boolean needsToStopPreview = mShowingPreview && Build.VERSION.SDK_INT < 14;
+                if (needsToStopPreview) {
+                    mCamera.stopPreview();
+                }
+                mCamera.setDisplayOrientation(calcDisplayOrientation(displayOrientation));
+                if (needsToStopPreview) {
+                    mCamera.startPreview();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -448,7 +456,12 @@ class Camera1 extends CameraViewImpl {
             e.printStackTrace();
         }
         if (mShowingPreview) {
-            mCamera.startPreview();
+            try
+            {
+                mCamera.startPreview();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

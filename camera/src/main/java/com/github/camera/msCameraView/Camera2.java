@@ -566,6 +566,8 @@ class Camera2 extends CameraViewImpl {
         } catch (CameraAccessException e) {
             e.printStackTrace();
             //throw new RuntimeException("Failed to start camera session");
+        }catch (NullPointerException e) {
+            e.printStackTrace();
         }
     }
 
@@ -753,6 +755,8 @@ class Camera2 extends CameraViewImpl {
                     }, null);
         } catch (CameraAccessException e) {
             Log.e(TAG, "Cannot capture a still picture.", e);
+        } catch (NullPointerException e) {
+            e.printStackTrace();
         }
     }
 
